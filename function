@@ -1,4 +1,4 @@
-
+f = "r.nc"
 
 fun_seatemp = function(f)   {
                             x <- values(raster(f, varname= xyznames[1]))
