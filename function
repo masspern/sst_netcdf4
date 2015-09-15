@@ -1,4 +1,4 @@
-f = "r.nc"
+files <- list.files(pattern="nc")
 
 fun_seatemp = function(f)   {
                             x <- values(raster(f, varname= xyznames[1]))
@@ -16,3 +16,9 @@ fun_seatemp = function(f)   {
                             writeRaster(ras, filename=paste0(f1,".tif"), format="GTiff")
                             }
 
+
+for (i in files) {
+
+fun_seatemp(i)
+ 
+}
