@@ -24,6 +24,13 @@ readsst_nc4 = function(fname, write.file=TRUE )   {
                             lon <- h5read(fname, "lon")
                             lat <- h5read(fname, "lat")
                             sst <- h5read(fname, "sea_surface_temperature")
+                            
+                            # or in Win32/64 env without rhdf5
+                            
+                            # lon <- values(raster(paste0('HDF5:\"',fname,'\"://lon')
+                            # lat <- values(raster(paste0('HDF5:\"',fname,'\"://lat')
+                            # sst <- values(raster(paste0('HDF5:\"',fname,'\"://sea_surface_temperature')
+                            
                             sst=as.vector(sst)
                             sst <- replace(sst, sst == -32768, NaN)
                             sst <- (sst + 273.15) * 0.01
