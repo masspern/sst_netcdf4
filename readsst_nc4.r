@@ -27,9 +27,9 @@ readsst_nc4 = function(fname, write.file=TRUE )   {
                             
                             # or in Win32/64 env without rhdf5
                             
-                            # lon <- values(raster(paste0('HDF5:\"',fname,'\"://lon')
-                            # lat <- values(raster(paste0('HDF5:\"',fname,'\"://lat')
-                            # sst <- values(raster(paste0('HDF5:\"',fname,'\"://sea_surface_temperature')
+                            # lon <- values(raster(paste0('HDF5:\"',fname,'\"://lon')))
+                            # lat <- values(raster(paste0('HDF5:\"',fname,'\"://lat')))
+                            # sst <- values(raster(paste0('HDF5:\"',fname,'\"://sea_surface_temperature')))
                             
                             sst=as.vector(sst)
                             sst <- replace(sst, sst == -32768, NaN)
