@@ -1,40 +1,51 @@
 
 #' readsst_nc4
 #'
-#' @description Use to be read nc sst file and convert in  R  raster and write it in GTiff format.
+#' @description Use to be read nc sst file and convert in  R  raster and write it in GTiff format. Please install rhdf5 
+#' from BioClite Repository 
 #'
 #' @param  f   Character  Name of file in nc4 format
 #' @return raster object
-#' @author  Consorzio LaMMA  Massimo Perna \email{perna@@lamma.rete.toscana.it}
+#' @author  Consorzio LaMMA  Massimo Perna \email{perna@@lamma.rete.toscana.it} Alfonso Crisci \email{a.crisci@@ibimet.cnr.it}
 #' @keywords  DISIT,twitter vigilance
+#' @reference http://www.r-bloggers.com/working-with-hdf-files-in-r-example-pathfinder-sst-data/
 #' @example 
 #' files <- list.files(pattern="nc")
 #  res=lapply(files,FUN=readsst_nc4)
 #'
 #' @export
 
-readsst_nc4 = function(f, write.file=TRUE )   {
-                            require(ncdf4)
+readsst_nc4 = function(fname, write.file=TRUE )   {
+                            require(rhdf5)
+                            # source("http://bioconductor.org/biocLite.R")
+                            # biocLite("rhdf5")
                             require(raster)
+                            require(sp)
+                            lon <- h5read(fname, "lon")
+                            lat <- h5read(fname, "lat")
+                            sst <- h5read(fname, "sea_surface_temperature")
                             
-                            x <- values(raster(f, varname= xyznames[1]))
-                            y <- values(raster(f, varname= xyznames[2]))
-                            z <- values(raster(f, varname = xyznames[3]))
-                            sst <- data.frame(x,y,z)
-                            sst <- na.omit(data.frame(apply(sst, 2, function(x) as.numeric(as.character(x)))))
-                            xmn=min(sst[,1]); xmx=max(sst[,1])
-                            ymn=min(sst[,2]); ymx=max(sst[,2])
-                            r <- raster(nrows=2048, ncols=1080, 
-                            xmn=xmn, xmx=xmx, 
-                            ymn=ymn, ymx=ymx )
-                            ras <- rasterize(sst[,1:2], r, field = sst[,3])
-                            f1 <- sub("^([^.]*).*", "\\1", f) 
+                            # or in Win32/64 env without rhdf5
+                            
+                            # lon <- values(raster(paste0('HDF5:\"',fname,'\"://lon')))
+                            # lat <- values(raster(paste0('HDF5:\"',fname,'\"://lat')))
+                            # sst <- values(raster(paste0('HDF5:\"',fname,'\"://sea_surface_temperature')))
+                            
+                            sst=as.vector(sst)
+                            sst <- replace(sst, sst == -32768, NaN)
+                            sst <- (sst + 273.15) * 0.01
+                            sst_points <- na.omit(data.frame(lon=as.numeric(lon),lat=as.numeric(lat),sst=as.numeric(sst)))
+                            coordinates(sst_points) = ~ lon+lat
+                            proj4string(sst_points) = CRS("+init=epsg:4326")
+                            r <- raster(fname,varname="lat")
+                            extent(r)=extent(sst_points)
+                            ras <- rasterize(sst_points, r, field = "sst", fun='last', background=NA)
+                            f1 <- sub("^([^.]*).*", "\\1", fname) 
                             if ( write.file==TRUE) {
                                                    writeRaster(ras, filename=paste0(f1,".tif"), format="GTiff")
                                                    }
                             return(ras)
                             }
-
 
 
 
